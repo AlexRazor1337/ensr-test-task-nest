@@ -9,8 +9,8 @@ import { ConfigService } from '@nestjs/config';
       useFactory: async (configService: ConfigService) => ({
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
-        autoLoadEntities: true,
         synchronize: configService.get<boolean>('SYNCHRONIZE'),
+        autoLoadEntities: true,
       }),
     }),
   ],
