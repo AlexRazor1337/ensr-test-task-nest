@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { SystemConfigService } from './system-config.service';
 import { CreateSystemConfigDto } from './dto/create-system-config.dto';
-import { UpdateSystemConfigDto } from './dto/update-system-config.dto';
 
 @Controller('system-config')
 export class SystemConfigController {
@@ -12,21 +11,8 @@ export class SystemConfigController {
     return this.systemConfigService.create(createSystemConfigDto);
   }
 
-  @Get()
-  findAll() {
-    return this.systemConfigService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.systemConfigService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateSystemConfigDto: UpdateSystemConfigDto,
-  ) {
-    return this.systemConfigService.update(+id, updateSystemConfigDto);
+  @Get('latest')
+  findLatest() {
+    return this.systemConfigService.findLatest();
   }
 }

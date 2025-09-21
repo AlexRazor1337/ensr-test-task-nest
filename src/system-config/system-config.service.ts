@@ -1,26 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSystemConfigDto } from './dto/create-system-config.dto';
-import { UpdateSystemConfigDto } from './dto/update-system-config.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SystemConfig } from './entities/system-config.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SystemConfigService {
-  create(createSystemConfigDto: CreateSystemConfigDto) {
-    return 'This action adds a new systemConfig';
+  constructor(
+    @InjectRepository(SystemConfig)
+    private readonly systemConfigRepository: Repository<SystemConfig>,
+  ) {}
+  async create(createSystemConfigDto: CreateSystemConfigDto) {
+    await this.systemConfigRepository.delete(1);
+    return this.systemConfigRepository.save({
+      ...createSystemConfigDto,
+      id: 1,
+    });
   }
 
-  findAll() {
-    return `This action returns all systemConfig`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} systemConfig`;
-  }
-
-  update(id: number, updateSystemConfigDto: UpdateSystemConfigDto) {
-    return `This action updates a #${id} systemConfig`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} systemConfig`;
+  findLatest() {
+    return this.systemConfigRepository.findOne({ where: { id: 1 } });
   }
 }
