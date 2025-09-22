@@ -1,3 +1,4 @@
+import { Payment } from 'src/payment/entities/payment.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -18,8 +19,8 @@ export class Shop {
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   commissionPercentC: number;
 
-  // @OneToMany(() => Payment, (payment) => payment.shop)
-  // payments: Payment[];
+  @OneToMany(() => Payment, (payment) => payment.shop)
+  payments: Payment[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
