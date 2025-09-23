@@ -7,6 +7,9 @@ This project uses PostgreSQL with TypeORM, and Docker for local database setup.
 
 ## Getting Started
 
+### 0. Setup .env file
+Copy `.env.example` file and rename it into `.env`, edit as needed
+
 ### 1. Run Development Database
 Start the PostgreSQL database with Docker:
 ```bash
