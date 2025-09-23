@@ -14,7 +14,7 @@ export class CreateShopDto {
     description: 'Shop commission percent',
     example: 10.5,
   })
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsNumber({ maxDecimalPlaces: 5 })
   @Min(0)
   commissionPercentC: number;
 }

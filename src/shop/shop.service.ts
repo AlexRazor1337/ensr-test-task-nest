@@ -6,6 +6,7 @@ import { Shop } from './entities/shop.entity';
 import { Repository } from 'typeorm';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentStatus } from 'src/payment/entities/payment.entity';
+import { SystemConfigService } from 'src/system-config/system-config.service';
 
 @Injectable()
 export class ShopService {
@@ -14,8 +15,21 @@ export class ShopService {
     private readonly shopRepository: Repository<Shop>,
 
     private readonly paymentService: PaymentService,
+
+    private readonly systemConfigService: SystemConfigService,
   ) {}
-  create(createShopDto: CreateShopDto) {
+  async create(createShopDto: CreateShopDto) {
+    const config = await this.systemConfigService.get();
+
+    const comissionSum =
+      config.commissionFixedA +
+      config.commissionPercentB +
+      createShopDto.commissionPercentC;
+
+    if (comissionSum >= 1) {
+      throw new Error('Commissions sum must be less than 1');
+    }
+
     return this.shopRepository.save(createShopDto);
   }
 

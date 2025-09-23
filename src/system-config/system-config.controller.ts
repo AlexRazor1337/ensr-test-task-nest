@@ -11,6 +11,14 @@ export class SystemConfigController {
   async update(
     @Body() updateSystemConfigDto: UpdateSystemConfigDto,
   ): Promise<Omit<SystemConfig, 'id'>> {
+    if (
+      updateSystemConfigDto.commissionFixedA +
+        updateSystemConfigDto.commissionPercentB >=
+      1
+    ) {
+      throw new Error('Commissions sum must be less than 1');
+    }
+
     await this.systemConfigService.update(updateSystemConfigDto);
 
     return this.systemConfigService.get();
