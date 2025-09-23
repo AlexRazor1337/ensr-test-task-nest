@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     container_name: ensr-pg
@@ -15,5 +13,20 @@ services:
       - "5432:5432"
     restart: unless-stopped
     
+  postgres-test:
+    container_name: ensr-pg-test
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+      POSTGRES_DB: payments
+    volumes:
+      - postgres:/data/postgres-test
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    
 volumes:
   postgres:
+  postgres-test:

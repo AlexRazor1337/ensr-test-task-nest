@@ -3,7 +3,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from 'dotenv';
 import { SeederOptions } from 'typeorm-extension';
 
-config();
+config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
 const options: DataSourceOptions & SeederOptions = {
   type: 'postgres',
@@ -11,7 +11,6 @@ const options: DataSourceOptions & SeederOptions = {
   entities: ['src/**/*.entity{.ts,.js}'],
   migrations: ['dist/database/migrations/*{.ts,.js}'],
   synchronize: false,
-
   seeds: ['src/database/seeds/**/*{.ts,.js}'],
 };
 

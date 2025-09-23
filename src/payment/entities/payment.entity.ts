@@ -16,6 +16,7 @@ export enum PaymentStatus {
   PAID_OUT = 'paid_out',
 }
 
+// TODO: BigInt refactor?
 @Entity({ name: 'payments' })
 export class Payment {
   @PrimaryGeneratedColumn()
