@@ -57,7 +57,7 @@ export class PaymentService {
       throw new NotFoundException(`Shop with id ${shopId} not found`);
     }
 
-    const systemConfig = await this.systemConfigService.findLatest();
+    const systemConfig = await this.systemConfigService.get();
     const minAmount = this.calculateMinAmount(
       systemConfig.commissionFixedA,
       systemConfig.commissionPercentB,

@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSystemConfigDto } from './dto/create-system-config.dto';
+import { UpdateSystemConfigDto } from './dto/update-system-config.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { SystemConfig } from './entities/system-config.entity';
 import { Repository } from 'typeorm';
+
+const STALE_CONFIG_ID = 1;
 
 @Injectable()
 export class SystemConfigService {
@@ -10,15 +12,23 @@ export class SystemConfigService {
     @InjectRepository(SystemConfig)
     private readonly systemConfigRepository: Repository<SystemConfig>,
   ) {}
-  async create(createSystemConfigDto: CreateSystemConfigDto) {
-    await this.systemConfigRepository.delete(1);
-    return this.systemConfigRepository.save({
-      ...createSystemConfigDto,
-      id: 1,
-    });
+  async update(updateSystemConfigDto: UpdateSystemConfigDto) {
+    return this.systemConfigRepository.update(
+      STALE_CONFIG_ID,
+      updateSystemConfigDto,
+    );
   }
 
-  findLatest() {
-    return this.systemConfigRepository.findOne({ where: { id: 1 } });
+  get(): Promise<Omit<SystemConfig, 'id'>> {
+    return this.systemConfigRepository.findOne({
+      where: { id: STALE_CONFIG_ID },
+      select: [
+        'commissionFixedA',
+        'commissionPercentB',
+        'blockPercentD',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
   }
 }

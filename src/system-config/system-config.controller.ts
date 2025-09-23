@@ -1,18 +1,23 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Body, Put } from '@nestjs/common';
 import { SystemConfigService } from './system-config.service';
-import { CreateSystemConfigDto } from './dto/create-system-config.dto';
+import { UpdateSystemConfigDto } from './dto/update-system-config.dto';
+import { SystemConfig } from './entities/system-config.entity';
 
 @Controller('system-config')
 export class SystemConfigController {
   constructor(private readonly systemConfigService: SystemConfigService) {}
 
-  @Post()
-  create(@Body() createSystemConfigDto: CreateSystemConfigDto) {
-    return this.systemConfigService.create(createSystemConfigDto);
+  @Put()
+  async update(
+    @Body() updateSystemConfigDto: UpdateSystemConfigDto,
+  ): Promise<Omit<SystemConfig, 'id'>> {
+    await this.systemConfigService.update(updateSystemConfigDto);
+
+    return this.systemConfigService.get();
   }
 
-  @Get('latest')
-  findLatest() {
-    return this.systemConfigService.findLatest();
+  @Get()
+  get(): Promise<Omit<SystemConfig, 'id'>> {
+    return this.systemConfigService.get();
   }
 }

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, Min } from 'class-validator';
 
-export class CreateSystemConfigDto {
+export class UpdateSystemConfigDto {
   @ApiProperty({
     description: 'Fixed commission (A)',
     example: 10.5,
