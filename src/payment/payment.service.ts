@@ -45,9 +45,9 @@ export class PaymentService {
     return (
       amount -
       fixedA -
-      (amount * commissionB) / 100 -
-      (amount * commissionC) / 100 -
-      (amount * blockedD) / 100
+      amount * commissionB -
+      amount * commissionC -
+      amount * blockedD
     );
   }
 
@@ -83,11 +83,16 @@ export class PaymentService {
     return this.paymentRepo.save(payment);
   }
 
-  async updateStatus(ids: number[], status: PaymentStatus): Promise<void> {
+  async updateStatus(ids: number[], status: PaymentStatus): Promise<Payment[]> {
+    const filterStatus =
+      status === PaymentStatus.PROCESSED
+        ? PaymentStatus.ACCEPTED
+        : PaymentStatus.PROCESSED;
+
     const payments = await this.paymentRepo.find({
       where: {
         id: In(ids),
-        status: In([PaymentStatus.ACCEPTED, PaymentStatus.PROCESSED]),
+        status: filterStatus,
       },
     });
 
@@ -117,7 +122,7 @@ export class PaymentService {
       payment.status = status;
     }
 
-    await this.paymentRepo.save(payments);
+    return this.paymentRepo.save(payments);
   }
 
   async moveStatus(payments: Payment[]): Promise<void> {

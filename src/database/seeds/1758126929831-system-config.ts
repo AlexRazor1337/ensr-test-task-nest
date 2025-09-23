@@ -10,8 +10,8 @@ export default class SystemConfigSeeder implements Seeder {
       {
         id: 1,
         commissionFixedA: 10,
-        commissionPercentB: 5,
-        blockPercentD: 5,
+        commissionPercentB: 0.1,
+        blockPercentD: 0.25,
       },
     ]);
   }

@@ -82,14 +82,21 @@ export class ShopService {
     let totalPayedOut = 0;
 
     awaitingPayments.forEach((payment) => {
-      if (totalPayedOut + payment.amount <= totalAvailableAmount) {
+      const availableAmount = this.paymentService.calculateAvailableAmount(
+        payment.amount,
+        payment.commissionA,
+        payment.commissionB,
+        payment.commissionC,
+        payment.status === PaymentStatus.COMPLETED ? 0 : payment.blockedD,
+      );
+      if (totalPayedOut + availableAmount <= totalAvailableAmount) {
         paymentsToFulfill.push(payment);
-        totalPayedOut += payment.amount;
+        totalPayedOut += availableAmount;
       }
     });
 
     await this.paymentService.moveStatus(paymentsToFulfill);
-
+    // TODO: Save info that processed payment was fulfilled, so blocked can be paid out later
     return {
       totalPayedOut,
       payedOutPayments: paymentsToFulfill.map((payment) => ({
@@ -99,7 +106,7 @@ export class ShopService {
           payment.commissionA,
           payment.commissionB,
           payment.commissionC,
-          payment.status === PaymentStatus.COMPLETED ? payment.blockedD : 0,
+          payment.status === PaymentStatus.COMPLETED ? payment.blockedD : 0, // TODO: Currently incorrect
         ),
       })),
     };

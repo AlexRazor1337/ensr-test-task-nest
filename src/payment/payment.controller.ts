@@ -16,14 +16,20 @@ export class PaymentController {
 
   @Patch('processed')
   async markProcessed(@Body() dto: UpdatePaymentStatusDto) {
-    await this.paymentService.updateStatus(dto.ids, PaymentStatus.PROCESSED);
-    return { updated: dto.ids };
+    const payments = await this.paymentService.updateStatus(
+      dto.ids,
+      PaymentStatus.PROCESSED,
+    );
+    return { updated: payments.map((payment) => payment.id) };
   }
 
   @Patch('completed')
   async markCompleted(@Body() dto: UpdatePaymentStatusDto) {
-    await this.paymentService.updateStatus(dto.ids, PaymentStatus.COMPLETED);
-    return { updated: dto.ids };
+    const payments = await this.paymentService.updateStatus(
+      dto.ids,
+      PaymentStatus.COMPLETED,
+    );
+    return { updated: payments.map((payment) => payment.id) };
   }
 
   @Get(':id')
