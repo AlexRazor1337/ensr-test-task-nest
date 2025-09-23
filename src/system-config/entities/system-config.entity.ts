@@ -14,10 +14,10 @@ export class SystemConfig {
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   commissionFixedA: number;
 
-  @Column('decimal', { precision: 5, scale: 2, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   commissionPercentB: number;
 
-  @Column('decimal', { precision: 5, scale: 2, default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   blockPercentD: number;
 
   @CreateDateColumn({ name: 'created_at' })

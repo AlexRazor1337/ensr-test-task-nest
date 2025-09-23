@@ -1,4 +1,4 @@
-import { Shop } from 'src/shop/entities/shop.entity';
+import { Shop } from '../../shop/entities/shop.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -10,9 +10,9 @@ import {
 } from 'typeorm';
 
 export enum PaymentStatus {
-  ACCEPTED = 'accepted',
-  PROCESSED = 'processed',
-  COMPLETED = 'completed',
+  ACCEPTED = 'accepted', // When the payment is created
+  PROCESSED = 'processed', // Payment sum without commission and blocked is available
+  COMPLETED = 'completed', // Blocked is available
   PAID_OUT = 'paid_out',
 }
 

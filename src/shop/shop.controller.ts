@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { ShopService } from './shop.service';
 import { CreateShopDto } from './dto/create-shop.dto';
@@ -14,7 +16,10 @@ import { Shop } from './entities/shop.entity';
 
 @Controller('shop')
 export class ShopController {
-  constructor(private readonly shopService: ShopService) {}
+  constructor(
+    @Inject(forwardRef(() => ShopService))
+    private readonly shopService: ShopService,
+  ) {}
 
   @Post()
   async create(
@@ -23,6 +28,11 @@ export class ShopController {
     const shop = await this.shopService.create(createShopDto);
 
     return { id: shop.id };
+  }
+
+  @Post('fulfill/:id')
+  async fulfillPayments(@Param('id') id: number) {
+    return this.shopService.fulfillPayments(id);
   }
 
   @Get()
