@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,14 +24,11 @@ export class ShopService {
   ) {}
   async create(createShopDto: CreateShopDto) {
     const config = await this.systemConfigService.get();
-
     const comissionSum =
-      config.commissionFixedA +
-      config.commissionPercentB +
-      createShopDto.commissionPercentC;
+      createShopDto.commissionPercentC + Number(config.commissionPercentB);
 
     if (comissionSum >= 1) {
-      throw new Error('Commissions sum must be less than 1');
+      throw new BadRequestException('Commissions sum must be less than 1');
     }
 
     return this.shopRepository.save(createShopDto);
