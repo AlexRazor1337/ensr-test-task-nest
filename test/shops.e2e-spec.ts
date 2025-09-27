@@ -1,15 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
-import { ShopService } from './../src/shop/shop.service';
 import { INestApplication } from '@nestjs/common';
 import { CreateShopDto } from 'src/shop/dto/create-shop.dto';
 import { setup } from 'src/setup';
 
 describe('ShopController (e2e)', () => {
   let app: INestApplication;
-  let shopService: ShopService;
-
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -18,8 +15,6 @@ describe('ShopController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     setup(app);
     await app.init();
-
-    shopService = moduleFixture.get<ShopService>(ShopService);
   });
 
   afterEach(async () => {

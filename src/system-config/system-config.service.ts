@@ -20,15 +20,25 @@ export class SystemConfigService {
   }
 
   get(): Promise<Omit<SystemConfig, 'id'>> {
-    return this.systemConfigRepository.findOne({
-      where: { id: STALE_CONFIG_ID },
-      select: [
-        'commissionFixedA',
-        'commissionPercentB',
-        'blockPercentD',
-        'createdAt',
-        'updatedAt',
-      ],
-    });
+    return this.systemConfigRepository
+      .findOne({
+        where: { id: STALE_CONFIG_ID },
+        select: [
+          'commissionFixedA',
+          'commissionPercentB',
+          'blockPercentD',
+          'createdAt',
+          'updatedAt',
+        ],
+      })
+      .then((config) => {
+        return {
+          commissionFixedA: Number(config.commissionFixedA),
+          commissionPercentB: Number(config.commissionPercentB),
+          blockPercentD: Number(config.blockPercentD),
+          createdAt: config.createdAt,
+          updatedAt: config.updatedAt,
+        };
+      });
   }
 }

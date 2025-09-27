@@ -51,6 +51,9 @@ export class Payment {
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   blockedD: number;
 
+  @Column('bool', { default: false })
+  partiallyPaid: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

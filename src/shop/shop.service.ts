@@ -25,7 +25,7 @@ export class ShopService {
   async create(createShopDto: CreateShopDto) {
     const config = await this.systemConfigService.get();
     const comissionSum =
-      createShopDto.commissionPercentC + Number(config.commissionPercentB);
+      createShopDto.commissionPercentC + config.commissionPercentB;
 
     if (comissionSum >= 1) {
       throw new BadRequestException('Commissions sum must be less than 1');
