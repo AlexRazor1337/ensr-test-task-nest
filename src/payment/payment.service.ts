@@ -35,20 +35,22 @@ export class PaymentService {
     );
   }
 
-  calculateAvailableAmount(
-    amount: number,
-    fixedA: number,
-    commissionB: number,
-    commissionC: number,
-    blockedD = 0,
-  ): number {
-    return (
-      amount -
-      fixedA -
-      amount * commissionB -
-      amount * commissionC -
-      amount * blockedD
-    );
+  calculateAvailableAmount(payment: Payment): number {
+    let availableAmount =
+      payment.amount -
+      payment.commissionA -
+      (payment.amount * payment.commissionB +
+        payment.amount * payment.commissionC);
+
+    if (payment.partiallyPaid) {
+      availableAmount = payment.amount * payment.blockedD;
+    } else {
+      if (payment.status !== PaymentStatus.COMPLETED) {
+        availableAmount -= payment.amount * payment.blockedD;
+      }
+    }
+
+    return availableAmount;
   }
 
   async create({ shopId, amount }: CreatePaymentDto): Promise<Payment> {
@@ -100,7 +102,6 @@ export class PaymentService {
       throw new NotFoundException('Payments not found');
     }
 
-    // TODO: More status handling logic?
     // Use transaction?
     let paymentsToProcess = [];
     switch (status) {
@@ -129,7 +130,8 @@ export class PaymentService {
     const paymentsToProcess = payments.map((payment) => {
       switch (payment.status) {
         case PaymentStatus.PROCESSED:
-          payment.status = PaymentStatus.COMPLETED;
+          // Can move to COMPLETED?
+          payment.partiallyPaid = true;
           break;
         case PaymentStatus.COMPLETED:
           payment.status = PaymentStatus.PAID_OUT;
@@ -141,7 +143,7 @@ export class PaymentService {
       return payment;
     });
 
-    await this.paymentRepo.save(paymentsToProcess); // TODO Return
+    await this.paymentRepo.save(paymentsToProcess);
   }
 
   async findAllByShopId(

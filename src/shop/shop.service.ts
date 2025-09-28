@@ -54,25 +54,12 @@ export class ShopService {
     const totalAvailableAmount =
       processedPayments.reduce(
         (acc, payment) =>
-          acc +
-          this.paymentService.calculateAvailableAmount(
-            payment.amount,
-            payment.commissionA,
-            payment.commissionB,
-            payment.commissionC,
-            payment.blockedD,
-          ),
+          acc + this.paymentService.calculateAvailableAmount(payment),
         0,
       ) +
       completedPayments.reduce(
         (acc, payment) =>
-          acc +
-          this.paymentService.calculateAvailableAmount(
-            payment.amount,
-            payment.commissionA,
-            payment.commissionB,
-            payment.commissionC,
-          ),
+          acc + this.paymentService.calculateAvailableAmount(payment),
         0,
       );
 
@@ -83,33 +70,24 @@ export class ShopService {
     let totalPayedOut = 0;
 
     awaitingPayments.forEach((payment) => {
-      const availableAmount = this.paymentService.calculateAvailableAmount(
-        payment.amount,
-        payment.commissionA,
-        payment.commissionB,
-        payment.commissionC,
-        payment.status === PaymentStatus.COMPLETED ? 0 : payment.blockedD,
-      );
+      const availableAmount =
+        this.paymentService.calculateAvailableAmount(payment);
       if (totalPayedOut + availableAmount <= totalAvailableAmount) {
         paymentsToFulfill.push(payment);
         totalPayedOut += availableAmount;
       }
     });
 
+    // TODO: Account for failed DB?
+    const payedOutPayments = paymentsToFulfill.map((payment) => ({
+      id: payment.id,
+      amount: this.paymentService.calculateAvailableAmount(payment),
+    }));
+
     await this.paymentService.moveStatus(paymentsToFulfill);
-    // TODO: Save info that processed payment was fulfilled, so blocked can be paid out later
     return {
       totalPayedOut,
-      payedOutPayments: paymentsToFulfill.map((payment) => ({
-        id: payment.id,
-        amount: this.paymentService.calculateAvailableAmount(
-          payment.amount,
-          payment.commissionA,
-          payment.commissionB,
-          payment.commissionC,
-          payment.status === PaymentStatus.COMPLETED ? payment.blockedD : 0, // TODO: Currently incorrect
-        ),
-      })),
+      payedOutPayments,
     };
   }
 
