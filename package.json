@@ -23,7 +23,6 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    
     "database:drop": "cross-env-shell NODE_ENV=test npm run typeorm schema:drop",
     "pretest:e2e": "npm run database:drop && npm run build && npm run migration:run && npm run seed:run",
     "test:e2e": "jest --config ./test/jest-e2e.json",
@@ -39,6 +38,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "http-status-codes": "^2.3.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",

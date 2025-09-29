@@ -8,11 +8,13 @@ import {
   Delete,
   forwardRef,
   Inject,
+  HttpCode,
 } from '@nestjs/common';
 import { ShopService } from './shop.service';
 import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { Shop } from './entities/shop.entity';
+import { StatusCodes } from 'http-status-codes';
 
 @Controller('shop')
 export class ShopController {
@@ -30,7 +32,8 @@ export class ShopController {
     return { id: shop.id };
   }
 
-  @Post('fulfill/:id')
+  @Post(':id/fulfill')
+  @HttpCode(StatusCodes.OK)
   async fulfillPayments(@Param('id') id: number) {
     return this.shopService.fulfillPayments(id);
   }

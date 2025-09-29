@@ -10,6 +10,8 @@ import { PaymentStatus } from 'src/payment/entities/payment.entity';
 
 describe('PaymentController (e2e)', () => {
   let app: INestApplication;
+  let shopId: number;
+
   beforeAll(async () => {
     // Create shop which will be used for payments creation
 
@@ -24,7 +26,11 @@ describe('PaymentController (e2e)', () => {
       commissionPercentC: 0.1,
     };
 
-    request(app.getHttpServer()).post('/api/shop').send(createShopDto);
+    const response = await request(app.getHttpServer())
+      .post('/api/shop')
+      .send(createShopDto);
+
+    shopId = response.body.id;
 
     await app.close();
   });
@@ -46,7 +52,7 @@ describe('PaymentController (e2e)', () => {
   it('/payments (POST) - should create a payment', async () => {
     const createPaymentDto: CreatePaymentDto = {
       amount: 100,
-      shopId: 1,
+      shopId,
     };
 
     const response = await request(app.getHttpServer())
@@ -62,7 +68,7 @@ describe('PaymentController (e2e)', () => {
   it('/payments (POST) - should not create a payment if amount is less than 0', async () => {
     const createPaymentDto: CreatePaymentDto = {
       amount: -1,
-      shopId: 1,
+      shopId,
     };
 
     await request(app.getHttpServer())
@@ -74,7 +80,7 @@ describe('PaymentController (e2e)', () => {
   it('/payments (POST) - should not create a payment if amount is less than min amount', async () => {
     const createPaymentDto: CreatePaymentDto = {
       amount: 10,
-      shopId: 1,
+      shopId,
     };
 
     await request(app.getHttpServer())
@@ -83,7 +89,7 @@ describe('PaymentController (e2e)', () => {
       .expect(400);
   });
 
-  it('/payments (markProcessed) - should update payment status and available amount', async () => {
+  it('/payments/processed (patch) - should update payment status and available amount', async () => {
     const updateStatusDto: UpdatePaymentStatusDto = {
       ids: [1],
     };
@@ -98,5 +104,26 @@ describe('PaymentController (e2e)', () => {
       .expect(200);
 
     expect(payment.body.status).toBe(PaymentStatus.PROCESSED);
+  });
+
+  it('/payments/completed (patch) - should not move payment to COMPLETED until PROCESSED', async () => {
+    const createPaymentDto: CreatePaymentDto = {
+      amount: 100,
+      shopId,
+    };
+
+    await request(app.getHttpServer())
+      .post('/api/payments')
+      .send(createPaymentDto)
+      .expect(201);
+
+    const updateStatusDto: UpdatePaymentStatusDto = {
+      ids: [2],
+    };
+
+    await request(app.getHttpServer())
+      .patch('/api/payments/completed')
+      .send(updateStatusDto)
+      .expect(404);
   });
 });

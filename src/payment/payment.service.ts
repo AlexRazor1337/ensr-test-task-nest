@@ -44,10 +44,10 @@ export class PaymentService {
 
     if (payment.partiallyPaid) {
       availableAmount = payment.amount * payment.blockedD;
-    } else {
-      if (payment.status !== PaymentStatus.COMPLETED) {
-        availableAmount -= payment.amount * payment.blockedD;
-      }
+    }
+
+    if (payment.status !== PaymentStatus.COMPLETED) {
+      availableAmount -= payment.amount * payment.blockedD;
     }
 
     return availableAmount;

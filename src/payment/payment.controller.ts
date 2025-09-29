@@ -1,8 +1,17 @@
-import { Controller, Post, Patch, Body, Param, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Patch,
+  Body,
+  Param,
+  Get,
+  HttpCode,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 import { Payment, PaymentStatus } from './entities/payment.entity';
+import { StatusCodes } from 'http-status-codes';
 
 @Controller('payments')
 export class PaymentController {
@@ -15,6 +24,7 @@ export class PaymentController {
   }
 
   @Patch('processed')
+  @HttpCode(StatusCodes.OK)
   async markProcessed(@Body() dto: UpdatePaymentStatusDto) {
     const payments = await this.paymentService.updateStatus(
       dto.ids,
@@ -24,6 +34,7 @@ export class PaymentController {
   }
 
   @Patch('completed')
+  @HttpCode(StatusCodes.OK)
   async markCompleted(@Body() dto: UpdatePaymentStatusDto) {
     const payments = await this.paymentService.updateStatus(
       dto.ids,

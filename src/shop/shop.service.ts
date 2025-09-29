@@ -50,28 +50,28 @@ export class ShopService {
       id,
       PaymentStatus.COMPLETED,
     );
+    let awaitingPayments = [...processedPayments, ...completedPayments];
 
-    const totalAvailableAmount =
-      processedPayments.reduce(
-        (acc, payment) =>
-          acc + this.paymentService.calculateAvailableAmount(payment),
-        0,
-      ) +
-      completedPayments.reduce(
-        (acc, payment) =>
-          acc + this.paymentService.calculateAvailableAmount(payment),
-        0,
-      );
+    const availableAmountMap = awaitingPayments.reduce((acc, payment) => {
+      acc[payment.id] = this.paymentService.calculateAvailableAmount(payment);
+      return acc;
+    }, {});
 
-    const awaitingPayments = [...processedPayments, ...completedPayments];
+    awaitingPayments = awaitingPayments.filter(
+      (payment) => availableAmountMap[payment.id] > 0,
+    );
     awaitingPayments.sort((a, b) => b.amount - a.amount);
+
+    const totalAvailableAmount = awaitingPayments.reduce(
+      (acc, payment) => acc + availableAmountMap[payment.id],
+      0,
+    );
 
     const paymentsToFulfill = [];
     let totalPayedOut = 0;
 
     awaitingPayments.forEach((payment) => {
-      const availableAmount =
-        this.paymentService.calculateAvailableAmount(payment);
+      const availableAmount = availableAmountMap[payment.id];
       if (totalPayedOut + availableAmount <= totalAvailableAmount) {
         paymentsToFulfill.push(payment);
         totalPayedOut += availableAmount;
@@ -81,7 +81,7 @@ export class ShopService {
     // TODO: Account for failed DB?
     const payedOutPayments = paymentsToFulfill.map((payment) => ({
       id: payment.id,
-      amount: this.paymentService.calculateAvailableAmount(payment),
+      amount: availableAmountMap[payment.id],
     }));
 
     await this.paymentService.moveStatus(paymentsToFulfill);
