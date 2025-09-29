@@ -111,7 +111,9 @@ export class PaymentService {
     });
 
     if (!payments.length) {
-      throw new NotFoundException('Payments not found');
+      throw new NotFoundException(
+        'No payments with given IDs are suitable for updating',
+      );
     }
 
     let paymentsToProcess = [];
