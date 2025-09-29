@@ -114,7 +114,6 @@ export class PaymentService {
       throw new NotFoundException('Payments not found');
     }
 
-    // Use transaction?
     let paymentsToProcess = [];
     switch (status) {
       case PaymentStatus.PROCESSED:
