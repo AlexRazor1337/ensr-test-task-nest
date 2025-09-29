@@ -11,6 +11,7 @@ import { Payment, PaymentStatus } from './entities/payment.entity';
 import { ShopService } from 'src/shop/shop.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { SystemConfigService } from 'src/system-config/system-config.service';
+import { BigNumber } from 'bignumber.js';
 
 @Injectable()
 export class PaymentService {
@@ -29,25 +30,36 @@ export class PaymentService {
     commissionB: number,
     commissionC: number,
     blockedD: number,
-  ): number {
-    return (
-      fixedA + fixedA * commissionB + fixedA * commissionC + fixedA * blockedD
-    );
+  ): BigNumber {
+    const bigFixedA = BigNumber(fixedA);
+    const bigCommissionB = BigNumber(commissionB);
+    const bigCommissionC = BigNumber(commissionC);
+    const bigBlockedD = BigNumber(blockedD);
+
+    return bigFixedA
+      .plus(bigFixedA.times(bigCommissionB))
+      .plus(bigFixedA.times(bigCommissionC))
+      .plus(bigFixedA.times(bigBlockedD));
   }
 
-  calculateAvailableAmount(payment: Payment): number {
-    let availableAmount =
-      payment.amount -
-      payment.commissionA -
-      (payment.amount * payment.commissionB +
-        payment.amount * payment.commissionC);
+  calculateAvailableAmount(payment: Payment): BigNumber {
+    const bigAmount = BigNumber(payment.amount);
+    const bigCommissionA = BigNumber(payment.commissionA);
+    const bigCommissionB = BigNumber(payment.commissionB);
+    const bigCommissionC = BigNumber(payment.commissionC);
+    const bigBlockedD = BigNumber(payment.blockedD);
+
+    let availableAmount = bigAmount
+      .minus(bigCommissionA)
+      .minus(bigAmount.times(bigCommissionB))
+      .minus(bigAmount.times(bigCommissionC));
 
     if (payment.partiallyPaid) {
-      availableAmount = payment.amount * payment.blockedD;
+      availableAmount = bigAmount.times(bigBlockedD);
     }
 
-    if (payment.status !== PaymentStatus.COMPLETED) {
-      availableAmount -= payment.amount * payment.blockedD;
+    if (payment.status === PaymentStatus.PROCESSED) {
+      availableAmount = availableAmount.minus(bigAmount.times(bigBlockedD));
     }
 
     return availableAmount;
@@ -66,7 +78,7 @@ export class PaymentService {
       shop.commissionPercentC,
       systemConfig.blockPercentD,
     );
-    if (amount < minAmount) {
+    if (BigNumber(amount).isLessThan(minAmount)) {
       throw new BadRequestException(
         `Payment amount must be at least ${minAmount}`,
       );

@@ -8,6 +8,7 @@ import { CreatePaymentDto } from 'src/payment/dto/create-payment.dto';
 import { Payment } from 'src/payment/entities/payment.entity';
 import { SystemConfig } from 'src/system-config/entities/system-config.entity';
 import { Shop } from 'src/shop/entities/shop.entity';
+import { BigNumber } from 'bignumber.js';
 
 describe('ShopController (e2e)', () => {
   let app: INestApplication;
@@ -138,28 +139,33 @@ describe('ShopController (e2e)', () => {
       amount: createPaymentDto.amount,
     };
 
-    await request(app.getHttpServer())
+    const processedResponse = await request(app.getHttpServer())
       .patch('/api/payments/processed')
       .send({ ids: [processedPayment.id] })
       .expect(200);
+
+    expect(processedResponse.body).toEqual({
+      updated: [processedPayment.id],
+    });
 
     const response = await request(app.getHttpServer())
       .post(`/api/shop/${fulfillShop.id}/fulfill`)
       .expect(200);
 
-    const expectedAmount =
-      createPaymentDto.amount -
-      createPaymentDto.amount * config.blockPercentD -
-      createPaymentDto.amount * shop.commissionPercentC -
-      createPaymentDto.amount * config.commissionPercentB -
-      config.commissionFixedA;
+    const expectedAmount = BigNumber(createPaymentDto.amount)
+      .minus(BigNumber(createPaymentDto.amount).times(config.blockPercentD))
+      .minus(BigNumber(createPaymentDto.amount).times(shop.commissionPercentC))
+      .minus(
+        BigNumber(createPaymentDto.amount).times(config.commissionPercentB),
+      )
+      .minus(config.commissionFixedA);
 
     expect(response.body).toEqual({
-      totalPayedOut: expectedAmount,
+      totalPayedOut: expectedAmount.toNumber(),
       payedOutPayments: [
         {
           id: processedPayment.id,
-          amount: expectedAmount,
+          amount: expectedAmount.toNumber(),
         },
       ],
     });

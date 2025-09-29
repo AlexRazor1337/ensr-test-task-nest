@@ -11,6 +11,7 @@ import { Repository } from 'typeorm';
 import { PaymentService } from 'src/payment/payment.service';
 import { PaymentStatus } from 'src/payment/entities/payment.entity';
 import { SystemConfigService } from 'src/system-config/system-config.service';
+import { BigNumber } from 'bignumber.js';
 
 @Injectable()
 export class ShopService {
@@ -51,42 +52,46 @@ export class ShopService {
       PaymentStatus.COMPLETED,
     );
     let awaitingPayments = [...processedPayments, ...completedPayments];
+    const availableAmountMap: Record<number, BigNumber> =
+      awaitingPayments.reduce((acc, payment) => {
+        acc[payment.id] = this.paymentService.calculateAvailableAmount(payment);
+        return acc;
+      }, {});
 
-    const availableAmountMap = awaitingPayments.reduce((acc, payment) => {
-      acc[payment.id] = this.paymentService.calculateAvailableAmount(payment);
-      return acc;
-    }, {});
-
-    awaitingPayments = awaitingPayments.filter(
-      (payment) => availableAmountMap[payment.id] > 0,
+    awaitingPayments = awaitingPayments.filter((payment) =>
+      availableAmountMap[payment.id].isGreaterThan(0),
     );
     awaitingPayments.sort((a, b) => b.amount - a.amount);
 
     const totalAvailableAmount = awaitingPayments.reduce(
-      (acc, payment) => acc + availableAmountMap[payment.id],
-      0,
+      (acc, payment) => acc.plus(availableAmountMap[payment.id]),
+      BigNumber(0),
     );
 
     const paymentsToFulfill = [];
-    let totalPayedOut = 0;
+    let totalPayedOut = BigNumber(0);
 
     awaitingPayments.forEach((payment) => {
       const availableAmount = availableAmountMap[payment.id];
-      if (totalPayedOut + availableAmount <= totalAvailableAmount) {
+      if (
+        availableAmount
+          .plus(totalPayedOut)
+          .isLessThanOrEqualTo(totalAvailableAmount)
+      ) {
         paymentsToFulfill.push(payment);
-        totalPayedOut += availableAmount;
+        totalPayedOut = totalPayedOut.plus(availableAmount);
       }
     });
 
     // TODO: Account for failed DB?
     const payedOutPayments = paymentsToFulfill.map((payment) => ({
       id: payment.id,
-      amount: availableAmountMap[payment.id],
+      amount: availableAmountMap[payment.id].toNumber(),
     }));
 
     await this.paymentService.moveStatus(paymentsToFulfill);
     return {
-      totalPayedOut,
+      totalPayedOut: totalPayedOut.toNumber(),
       payedOutPayments,
     };
   }

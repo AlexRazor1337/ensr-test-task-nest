@@ -12,7 +12,7 @@ export class CreateShopDto {
 
   @ApiProperty({
     description: 'Shop commission percent',
-    example: 10.5,
+    example: 0.1,
   })
   @IsNumber({ maxDecimalPlaces: 5 })
   @Min(0)
